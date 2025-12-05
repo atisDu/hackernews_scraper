@@ -94,7 +94,6 @@ def scrape(page_nr):
 
 if __name__ == '__main__':
     
-    while True:
         scrape(page_nr)
     #šis tiek izsaukts no frontenda, kad refresho punktus
         update_score(page_nr)

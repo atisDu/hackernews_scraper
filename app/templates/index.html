@@ -35,11 +35,7 @@
 
 <div>
     {% if current_page > 1 %}
-        <a href="?page={{ current_page|add:-1 }}">Previous</a>
+        <a href="?action=scrape&page={{ current_page|add:-1 }}">Previous</a>
     {% endif %}
-    <a href="?page={{ current_page|add:1 }}">Next</a>   
+    <a href="?action=scrape&page={{ current_page|add:1 }}">Next</a>   
 </div>
-
-<script>
-    window.onload = window.location.href='?action=scrape&page={{ current_page }}';
-</script>
