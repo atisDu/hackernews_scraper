@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import mysql.connector
 
 
 id_n_score_map = {}
