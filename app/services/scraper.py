@@ -1,9 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
-import mysql.connector
+import os
+import django
 
+#django setups, lai varētu izmantot models.py db šeit
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+django.setup()
 
-id_n_score_map = {}
+from app.models import Post
+
+page_nr = 1  #sākuma lapas numurs
 
 def update_score(page_nr):
     # temp mappings, lai salīdzinātu vecā requesta un jaunā requesta punktus pie attiecīgā ID
@@ -19,24 +25,20 @@ def update_score(page_nr):
         #punkti tagad (atkal iterējas caur visām tabulas rindām)
         score_span = row.find_next_sibling('tr').select_one('[class^="score"]')
         score_now = score_span.get_text(strip=True) if score_span else '0 points'
-        #pievieno temp mapam
-        temp_map[id_now] = score_now
-
-    #salīdzina vecos un jaunus punktus pēc ID (1-ja ir temp mapē, tad tas ir jau eksistējoš un ir jāatjaunina),
-    #2 - paņem un overwrite vecos punktus ar jaunajiem pie tā paša ID
-    #iterē to visiem id, kas ir vecajā mapē
-    for id_before in list(id_n_score_map.keys()):    
-        if id_before in temp_map: # ja vecais id ir jaunajā mapē
-            # vēlviens checks, lai nebūtu lieki db writes
-            if id_n_score_map[id_before] == temp_map[id_before]:
-                #print(f'No score change for ID {id_before}, skipping update.')
-                continue
+        
+        #salīdzina ar DB un atjaunina, ja maiņājies
+        try:
+            post = Post.objects.get(id=int(id_now))
+            new_score = int(score_now.split()[0])
+            
+            if post.score != new_score:
+                post.score = new_score
+                post.save()
+                print(f'Updated entry with ID {id_now} to new score {score_now}')
             else:
-                id_n_score_map[id_before] = temp_map[id_before] 
-                print(f'Updated entry with ID {id_before} to new score {temp_map[id_before]}')
-        else:
-            #jauns ieraksts - ignorējam, lai main scrape funkcija to apstrādā
-            print(f'New entry found with ID {id_now} and score {score_now}')
+                print(f'No score change for ID {id_now}, skipping update.')
+        except Post.DoesNotExist:
+            print(f'Post with ID {id_now} not found in database.')
 
     
 
@@ -69,18 +71,29 @@ def scrape(page_nr):
         age = age_span.get('title')[:19] if age_span else 'unknown age'
         
         #visu izprintējam
-        print(title + ' | ' + url + ' | ' + score + ' | ' + age + ' | ID: ' + id)
+        #print(title + ' | ' + url + ' | ' + score + ' | ' + age + ' | ID: ' + id)
         
-        #lai izvairītos no liekiem db writes, pārbaudām vai jau neeksistē
-        if id in id_n_score_map:
-            #print(f'Entry with ID {id} already exists. Skipping database write.')
-            pass
-        else:
-            #saglabājam id un score mapingā
-            id_n_score_map[id] = score
+        #saglabājam db - get_or_create neatstāj duplicātus
+        try: 
+            post, created = Post.objects.get_or_create( #tgd izmanto get_or_create, kas ļauj atbrīvoties no lokālā mappinga, kā iepriekš
+                id=int(id),
+                defaults={
+                    'title': title,
+                    'score': int(score.split()[0]),  # noņem points daļu, atstāj tikai skaitli
+                    'url': url,
+                    'posted_at': age
+                }
+            )
+            if created:
+                print(f'Created new entry with ID {id}.')
+            else:
+                pass#print(f'Entry with ID {id} already exists in database.')
+        except Exception as e:
+            print(f'Error saving entry with ID {id}: {e}')
         
+
 if __name__ == '__main__':
-    page_nr = 1
+    
     while True:
         scrape(page_nr)
     #šis tiek izsaukts no frontenda, kad refresho punktus
