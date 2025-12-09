@@ -1,8 +1,11 @@
-from django.urls import path
-from app.views import ReactView, ScrapeView, UpdateScoresView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from app.views import PostViewSet, ReactView
+
+router = DefaultRouter()
+router.register(r'posts', PostViewSet, basename='post')
 
 urlpatterns = [
-    path('', ReactView.as_view(), name="react-view"),
-    path('scrape/', ScrapeView.as_view(), name="scrape-view"),
-    path('update-scores/', UpdateScoresView.as_view(), name="update-scores-view"),
+    path('', ReactView.as_view(), name='react-view'),  # GET / returns all posts
+    path('', include(router.urls)),  # /posts/ endpoints with scrape/ and update_scores/
 ]

@@ -1,8 +1,12 @@
 import React from 'react';
 import axios from 'axios';
-import $ from 'jquery'; //Dep. Datatables
-import 'datatables.net-dt';
+import jquery from 'jquery'; //Dep. Datatables
+import DataTable from 'datatables.net-dt';
 import './App.css';
+
+$(document).ready( function () { //Datatables inicalizācija
+    $('#myTable').DataTable();
+} );
 
 class App extends React.Component {
 
@@ -10,7 +14,6 @@ class App extends React.Component {
         posts: [],
         loading: false,
         error: null,
-        dataTable: null,
     }
 
     componentDidMount() {
@@ -20,14 +23,11 @@ class App extends React.Component {
     fetchPosts = () => {
         axios.get('http://localhost:8000/') //Visu fetchojam ar axios serializāciju no django rest api
             .then(res => {
-                const postsData = res.data.data || res.data;
                 this.setState({
-                    posts: postsData,
+                    posts: res.data,
                     error: null
-                }, () => {
-                    this.initializeDataTable();
-            });
-        })
+                });
+            })
             .catch(err => {
                 this.setState({
                     error: 'Failed to fetch posts, is Django up?'
@@ -35,64 +35,15 @@ class App extends React.Component {
             })
     }
 
-    //Loģika lai inicializētu DataTable
-    initializeDataTable = () => {
-        //Iznīcina ja eksistē jau
-        if ($.fn.DataTable.isDataTable('#postsTable')) {
-            $('#postsTable').DataTable().destroy();
-        }
-
-        //Uztaisa jaunu
-        $('#postsTable').DataTable({
-            data: this.state.posts,
-            columns: [
-                { 
-                    data: 'title',
-                    title: 'Title',
-                    render: function(data) {
-                        return '<strong>' + data + '</strong>';
-                    }
-                },
-                { 
-                    data: 'score',
-                    title: 'Score'
-                },
-                { 
-                    data: 'url',
-                    title: 'URL',
-                    render: function(data) {
-                        return '<a href="' + data + '" target="_blank">Link</a>';
-                    }
-                },
-                { 
-                    data: 'posted_at',
-                    title: 'Posted At',
-                    render: function(data) {
-                        return new Date(data).toLocaleString();
-                    }
-                }
-            ],
-            paging: true,
-            searching: true,
-            ordering: true,
-            responsive: true,
-            pageLength: 10,
-            lengthMenu: [10, 25, 50, 100],
-            destroy: true
-        });
-    }
-
     handleScrape = () => {
         this.setState({ loading: true });
         
-        axios.post('http://localhost:8000/posts/scrape/', { page: 1 })
+        axios.post('http://localhost:8000/scrape/', { page: 1 })
             .then(res => {
                 this.setState({
-                    posts: res.data,
+                    posts: res.data.posts,
                     loading: false,
                     error: null
-                }, () => {
-                    this.initializeDataTable();
                 });
             })
             .catch(err => {
@@ -106,14 +57,12 @@ class App extends React.Component {
     handleUpdateScores = () => {
         this.setState({ loading: true });
         
-        axios.post('http://localhost:8000/posts/update_scores/', { page: 1 })
+        axios.post('http://localhost:8000/update-scores/', { page: 1 })
             .then(res => {
                 this.setState({
-                    posts: res.data,
+                    posts: res.data.posts,
                     loading: false,
                     error: null
-                }, () => {
-                    this.initializeDataTable();
                 });
             })
             .catch(err => {
@@ -125,7 +74,7 @@ class App extends React.Component {
     }
 
     render() {
-        const { loading, error } = this.state;
+        const { posts, loading, error } = this.state;
 
         return (
             <div className="app-container">
@@ -159,18 +108,25 @@ class App extends React.Component {
 
                 {error && <div className="error-message">{error}</div>}
 
-                <div className="table-container">
-                    <table id="postsTable" className="display">
-                        <thead>
-                            <tr>
-                                <th>Title</th>
-                                <th>Score</th>
-                                <th>URL</th>
-                                <th>Posted At</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                <div className="posts-container">
+                    {posts.length > 0 ? (
+                        posts.map((post, id) => (
+                            <div key={id} className="post-card">
+                                <h2>{post.title}</h2>
+                                <div className="post-meta">
+                                    <span className="score">Score: {post.score} </span>
+                                    
+                                </div>
+                                <a href={post.url} target="_blank" rel="noopener noreferrer" className="post-url">
+                                    {post.url}
+                                </a>
+                                <br></br>
+                                <span className="posted-at">Time: {new Date(post.posted_at).toLocaleString()}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No posts found. Click "Scrape New Posts" to get started.</p>
+                    )}
                 </div>
             </div>
         );
