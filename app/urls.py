@@ -1,7 +1,6 @@
 from django.urls import path
-
-from . import views
+from app.views import ReactView
 
 urlpatterns = [
-    path("", views.index, name="index"),
+    path('', ReactView.as_view(), name="react-view"),
 ]

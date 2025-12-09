@@ -5,7 +5,7 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     score = models.IntegerField()
     url = models.URLField()
-    posted_at = models.DateTimeField()  # Stores: 2025-12-05T04:00:28
+    posted_at = models.DateTimeField()  # Glabā: 2025-12-05T04:00:28
     def __str__(self):
         return self.title
 

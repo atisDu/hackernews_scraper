@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from .models import React
+from app.models import Post
 
 class ReactSerializer(serializers.ModelSerializer):
     class Meta:
-        model = React
-        fields = ['name', 'detail']
+        model = Post
+        fields = ['id', 'title', 'score', 'url', 'posted_at']
