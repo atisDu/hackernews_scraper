@@ -4,6 +4,10 @@ import $ from 'jquery'; //Dep. Datatables
 import 'datatables.net-dt';
 import './App.css';
 
+// TODO:
+// (X) izdomāt loģiku, kā labāk scrapot ierakstus, piemēram, no 10 lapām uzreiz, nevis pa vienai (IR)
+// () Kā no datatables dabūt page mainīgo, lai varētu views ielikt iekšā scriptā
+
 class App extends React.Component {
 
     state = {

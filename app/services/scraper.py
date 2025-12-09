@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import django
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 #django setups, lai varētu izmantot models.py db šeit
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
@@ -16,7 +17,7 @@ def update_score(page_nr):
     temp_map = {}
     #vēlreiz aizsūta get request uz to pašu lapu
     url = f'https://news.ycombinator.com/?p={page_nr}' #/?p= lapas numurs, frontendā noderēs
-    response = requests.get(url)
+    response = requests.get(url, timeout=5)
     soup = BeautifulSoup(response.text, 'html.parser')
     for row in soup.select('tr.athing'):
         #id tagad
@@ -43,12 +44,10 @@ def update_score(page_nr):
             #print(f'Post with ID {id_now} not found in database.')
             pass
 
-    
-
 def scrape(page_nr):
      #lapas numurs, frontendā varēs mainīt
     url = f'https://news.ycombinator.com/?p={page_nr}' #/?p= lapas numurs, frontendā noderēs
-    response = requests.get(url)
+    response = requests.get(url, timeout=5)
     soup = BeautifulSoup(response.text, 'html.parser')
     
     #Vienas cilpas risinājums
@@ -94,7 +93,27 @@ def scrape(page_nr):
                 pass#print(f'Entry with ID {id} already exists in database.')
         except Exception as e:
             print(f'Error saving entry with ID {id}: {e}')
-        
+    
+#Tagad ar multi-threading 10 lapu scrape
+def multi_page_scrape(start_page, end_page):
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(scrape, page) for page in range(start_page, end_page + 1)]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f'Error during scraping: {e}')
+
+def multi_page_update(start_page, end_page):
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(scrape, page) for page in range(start_page, end_page + 1)]
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f'Error during scraping: {e}')
+
+
 
 if __name__ == '__main__':
     
