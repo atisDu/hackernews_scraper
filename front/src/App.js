@@ -1,0 +1,131 @@
+import React from 'react';
+import axios from 'axios';
+import jquery from 'jquery'; //Dep. datatabliem
+import './App.css';
+
+class App extends React.Component {
+
+    state = {
+        posts: [],
+        loading: false,
+        error: null,
+    }
+
+    componentDidMount() {
+        this.fetchPosts();
+    }
+
+    fetchPosts = () => {
+        axios.get('http://localhost:8000/') //Visu fetchojam ar axios serializāciju no django rest api
+            .then(res => {
+                this.setState({
+                    posts: res.data,
+                    error: null
+                });
+            })
+            .catch(err => {
+                this.setState({
+                    error: 'Failed to fetch posts, is Django up?'
+                });
+            })
+    }
+
+    handleScrape = () => {
+        this.setState({ loading: true });
+        
+        axios.post('http://localhost:8000/scrape/', { page: 1 })
+            .then(res => {
+                this.setState({
+                    posts: res.data.posts,
+                    loading: false,
+                    error: null
+                });
+            })
+            .catch(err => {
+                this.setState({
+                    error: 'Failed to scrape data',
+                    loading: false
+                });
+            })
+    }
+
+    handleUpdateScores = () => {
+        this.setState({ loading: true });
+        
+        axios.post('http://localhost:8000/update-scores/', { page: 1 })
+            .then(res => {
+                this.setState({
+                    posts: res.data.posts,
+                    loading: false,
+                    error: null
+                });
+            })
+            .catch(err => {
+                this.setState({
+                    error: 'Failed to update scores',
+                    loading: false
+                });
+            })
+    }
+
+    render() {
+        const { posts, loading, error } = this.state;
+
+        return (
+            <div className="app-container">
+                <h1>HackerNews scraper</h1>
+                
+                <div className="button-container">
+                    <button 
+                        onClick={this.handleScrape} 
+                        disabled={loading}
+                        className="btn btn-scrape"
+                    >
+                        {loading ? 'Loading...' : 'Scrape New Posts'}
+                    </button>
+                    
+                    <button 
+                        onClick={this.handleUpdateScores} 
+                        disabled={loading}
+                        className="btn btn-update"
+                    >
+                        {loading ? 'Loading...' : 'Update Scores'}
+                    </button>
+
+                    <button 
+                        onClick={this.fetchPosts} 
+                        disabled={loading}
+                        className="btn btn-refresh"
+                    >
+                        {loading ? 'Loading...' : 'Refresh'}
+                    </button>
+                </div>
+
+                {error && <div className="error-message">{error}</div>}
+
+                <div className="posts-container">
+                    {posts.length > 0 ? (
+                        posts.map((post, id) => (
+                            <div key={id} className="post-card">
+                                <h2>{post.title}</h2>
+                                <div className="post-meta">
+                                    <span className="score">Score: {post.score} </span>
+                                    
+                                </div>
+                                <a href={post.url} target="_blank" rel="noopener noreferrer" className="post-url">
+                                    {post.url}
+                                </a>
+                                <br></br>
+                                <span className="posted-at">Time: {new Date(post.posted_at).toLocaleString()}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <p>No posts found. Click "Scrape New Posts" to get started.</p>
+                    )}
+                </div>
+            </div>
+        );
+    }
+}
+
+export default App;

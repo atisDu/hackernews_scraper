@@ -1,0 +1,14 @@
+.app-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue',
+    sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #ff6600;
+  margin-bottom: 30px;
+}
+

@@ -34,11 +34,14 @@ def update_score(page_nr):
             if post.score != new_score:
                 post.score = new_score
                 post.save()
-                print(f'Updated entry with ID {id_now} to new score {score_now}')
+                #print(f'Updated entry with ID {id_now} to new score {score_now}')
+                pass
             else:
-                print(f'No score change for ID {id_now}, skipping update.')
+                #print(f'No score change for ID {id_now}, skipping update.')
+                pass
         except Post.DoesNotExist:
-            print(f'Post with ID {id_now} not found in database.')
+            #print(f'Post with ID {id_now} not found in database.')
+            pass
 
     
 
@@ -85,7 +88,8 @@ def scrape(page_nr):
                 }
             )
             if created:
-                print(f'Created new entry with ID {id}.')
+                #print(f'Created new entry with ID {id}.')
+                pass
             else:
                 pass#print(f'Entry with ID {id} already exists in database.')
         except Exception as e:
