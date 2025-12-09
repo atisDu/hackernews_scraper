@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App.js.old';
+import App from './App.js'; //Paldies lint reimportingam, viss nobruka jo girbēja .old importēt?!?!?!?!??
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
