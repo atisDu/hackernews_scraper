@@ -15,11 +15,12 @@ class PostViewSet(ModelViewSet):
     @action(detail=False, methods=['post'])
     def scrape(self, request):
         
-        page_nr = request.data.get('page', 1)
+        start_page_nr = request.data.get('page', 1)
         
         #Palaiž scraper service scriptu un tā funkciju ar lapas nr.
-        scraper.multi_page_scrape(int(page_nr), 10 + int(page_nr) - 1)
-        scraper.multi_page_update(int(page_nr))
+        end_page_nr = 10 + int(start_page_nr) - 1
+        scraper.multi_page_scrape(int(start_page_nr), end_page_nr)
+        scraper.multi_page_update(int(start_page_nr), end_page_nr)
         
         queryset = Post.objects.all()
         serializer = self.get_serializer(queryset, many=True)
@@ -28,8 +29,11 @@ class PostViewSet(ModelViewSet):
     @action(detail=False, methods=['post'])
     def update_scores(self, request):
 
-        page_nr = request.data.get('page', 1)
-        scraper.multi_page_update(int(page_nr))
+        start_page_nr = request.data.get('page', 1)
+        
+        #Palaiž scraper service scriptu un tā funkciju ar lapas nr.
+        end_page_nr = 10 + int(start_page_nr) - 1
+        scraper.multi_page_update(int(start_page_nr), end_page_nr)
         queryset = Post.objects.all()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
