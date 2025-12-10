@@ -15,10 +15,10 @@ class PostViewSet(ModelViewSet):
     @action(detail=False, methods=['post'])
     def scrape(self, request):
         
-        start_page_nr = request.data.get('page', 1)
+        start_page_nr = request.data.get('start_page', 1)
+        end_page_nr = request.data.get('end_page', 10)
         
         #Palaiž scraper service scriptu un tā funkciju ar lapas nr.
-        end_page_nr = 10 + int(start_page_nr) - 1
         scraper.multi_page_scrape(int(start_page_nr), end_page_nr)
         scraper.multi_page_update(int(start_page_nr), end_page_nr)
         
@@ -40,7 +40,7 @@ class PostViewSet(ModelViewSet):
 
 
 
-
+#Lai fetchotu visu db
 class ReactView(APIView):
     serializer_class = ReactSerializer
 
@@ -55,52 +55,3 @@ class ReactView(APIView):
             serializer.save()
             return Response(serializer.data)
 
-#Lai palaistu scrapera requestus atjaunot punktus un scrapot jaunus ierakstus
-class ScrapeView(APIView):
-    
-    def post(self, request):
-        try:
-            #Dabon lapu nr. no requesta, noklusējumā = 1
-            page_nr = request.data.get('page', 1)
-            
-            #Palaiž scraper service scriptu un tā funkciju ar lapas nr.
-            scraper.scrape(int(page_nr))
-            scraper.update_score(int(page_nr))
-            
-            #kārto pēc jaunākajiem ierakstiem !!lapā!!
-            queryset = Post.objects.all().order_by('-posted_at')
-            serializer = ReactSerializer(queryset, many=True)
-            
-            return Response({
-                'status': 'success',
-                'message': 'Scraped new post and updated scores.',
-                'posts': serializer.data
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UpdateScoresView(APIView):
-    #Lai atjaunotu punktus esošajiem ierakstiem automātiski refreshojot no fronta puses, bet citādi tas pats kas otrā
-    
-    def post(self, request):
-        try:
-            page_nr = request.data.get('page', 1)
-            scraper.update_score(int(page_nr))
-            
-            queryset = Post.objects.all().order_by('-posted_at')
-            serializer = ReactSerializer(queryset, many=True)
-            
-            return Response({
-                'status': 'success',
-                'message': 'Scores updated',
-                'posts': serializer.data
-            }, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({
-                'status': 'error',
-                'message': str(e)
-            }, status=status.HTTP_400_BAD_REQUEST)

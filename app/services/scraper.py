@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import django
+from django.db import connection
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 #django setups, lai varētu izmantot models.py db šeit
@@ -43,6 +44,7 @@ def update_score(page_nr):
         except Post.DoesNotExist:
             #print(f'Post with ID {id_now} not found in database.')
             pass
+    connection.close()        
 
 def scrape(page_nr):
      #lapas numurs, frontendā varēs mainīt
@@ -93,6 +95,7 @@ def scrape(page_nr):
                 pass#print(f'Entry with ID {id} already exists in database.')
         except Exception as e:
             print(f'Error saving entry with ID {id}: {e}')
+    connection.close()
     
 #Tagad ar multi-threading 10 lapu scrape
 def multi_page_scrape(start_page, end_page):

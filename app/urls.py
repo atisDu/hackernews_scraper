@@ -6,6 +6,6 @@ router = DefaultRouter()
 router.register(r'posts', PostViewSet, basename='post')
 
 urlpatterns = [
-    path('', ReactView.as_view(), name='react-view'),  # GET / returns all posts
-    path('', include(router.urls)),  # /posts/ endpoints with scrape/ and update_scores/
+    path('', ReactView.as_view(), name='react-view'),  # GET / atgriež visus ierakstus
+    path('', include(router.urls)),  # /posts/ endpointi, lai scrapotu un atjauninātu
 ]

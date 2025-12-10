@@ -3,17 +3,21 @@ import axios from 'axios';
 import $ from 'jquery'; //Dep. Datatables
 import 'datatables.net-dt';
 import './App.css';
+import "@radix-ui/themes/styles.css";
+import { Slider } from "radix-ui"; // Divu punktu slideris, lai atlasītu lapas nr.
+import "./styles.css";
+import { Box, Card } from '@radix-ui/themes';
 
 // TODO:
 // (X) izdomāt loģiku, kā labāk scrapot ierakstus, piemēram, no 10 lapām uzreiz, nevis pa vienai (IR)
 // () Kā no datatables dabūt page mainīgo, lai varētu views ielikt iekšā scriptā
 
 class App extends React.Component {
-
     state = {
         posts: [],
         loading: false,
         error: null,
+        sliderValue: [0, 10], //sliderim sākotnējās vērtības ir 0 un 10
         dataTable: null,
     }
 
@@ -41,13 +45,21 @@ class App extends React.Component {
 
     //Loģika lai inicializētu DataTable
     initializeDataTable = () => {
-        //Iznīcina ja eksistē jau
+
+        
+
+        //Ja jau eksistē, tad tikai atjaunina datus
         if ($.fn.DataTable.isDataTable('#postsTable')) {
-            $('#postsTable').DataTable().destroy();
+            const table = $('#postsTable').DataTable();
+            table.clear();
+            table.rows.add(this.state.posts);
+            table.draw(false);  // atstāj to pašu lapu
+            return;
         }
 
         //Uztaisa jaunu
         $('#postsTable').DataTable({
+            
             data: this.state.posts,
             columns: [
                 { 
@@ -77,6 +89,7 @@ class App extends React.Component {
                 }
             ],
             paging: true,
+            order: [[3, 'desc']], //Jaunākie ieraksti pirmie
             searching: true,
             ordering: true,
             responsive: true,
@@ -84,12 +97,25 @@ class App extends React.Component {
             lengthMenu: [10, 25, 50, 100],
             destroy: true
         });
+        /*
+        //klausās lpp nr.
+        $('#postsTable').on('page.dt', () => {
+        const current = table.page();
+        console.log("Page changed to:", current + 1);
+        localStorage.setItem('postsTablePage', current);
+        });
+
+        $('#postsTable').on('length.dt', function () {
+        const table = $('#postsTable').DataTable();
+        console.log("Rows per page is now:", table.page.len());
+        });
+        */
     }
 
     handleScrape = () => {
         this.setState({ loading: true });
-        
-        axios.post('http://localhost:8000/posts/scrape/', { page: 1 })
+        const [start_page_nr, end_page_nr] = this.state.sliderValue; //Dabū jau no stāvokļa lapu nr.
+        axios.post('http://localhost:8000/posts/scrape/', { start_page: start_page_nr, end_page: end_page_nr })
             .then(res => {
                 this.setState({
                     posts: res.data,
@@ -109,8 +135,8 @@ class App extends React.Component {
 
     handleUpdateScores = () => {
         this.setState({ loading: true });
-        
-        axios.post('http://localhost:8000/posts/update_scores/', { page: 1 })
+        const [start_page_nr, end_page_nr] = this.state.sliderValue; //Dabū jau no stāvokļa lapu nr.
+        axios.post('http://localhost:8000/posts/update_scores/', { start_page: start_page_nr, end_page: end_page_nr })
             .then(res => {
                 this.setState({
                     posts: res.data,
@@ -128,16 +154,36 @@ class App extends React.Component {
             })
     }
 
+    handleSliderChange = (newValue) => {
+        this.setState({ sliderValue: newValue });
+    }
+
     render() {
-        const { loading, error } = this.state;
+        const { loading, error, sliderValue } = this.state;
 
         return (
             <div className="app-container">
                 <h1>HackerNews scraper</h1>
+
+            <Box>
+                <Card>
+                    
+                <form>
+		    <Slider.Root className="SliderRoot" defaultValue={[0, 10]} max={50} step={1} minStepsBetweenThumbs={1} onValueChange={this.handleSliderChange}>
+			<Slider.Track className="SliderTrack">
+				<Slider.Range className="SliderRange" />
+			</Slider.Track>
+			<Slider.Thumb className="SliderThumb" aria-label="Volume" />
+            <Slider.Thumb className="SliderThumb" aria-label="Volume" />
+		</Slider.Root>
+	    </form> 
+         <p ref={this.sliderDisplayRef}>
+                Scrape pages: {sliderValue[0]} to {sliderValue[1]}
+                </p>
                 
-                <div className="button-container">
+                 <div className="button-container">
                     <button 
-                        onClick={this.handleScrape} 
+                        onClick={() => this.handleScrape()} //Nodod slidera vērtības scrape service scriptam
                         disabled={loading}
                         className="btn btn-scrape"
                     >
@@ -145,21 +191,20 @@ class App extends React.Component {
                     </button>
                     
                     <button 
-                        onClick={this.handleUpdateScores} 
+                        onClick={() => this.handleUpdateScores()} 
                         disabled={loading}
                         className="btn btn-update"
                     >
                         {loading ? 'Loading...' : 'Update Scores'}
                     </button>
 
-                    <button 
-                        onClick={this.fetchPosts} 
-                        disabled={loading}
-                        className="btn btn-refresh"
-                    >
-                        {loading ? 'Loading...' : 'Refresh'}
-                    </button>
+                   
                 </div>
+
+                </Card>
+            </Box>
+            
+                <br></br>
 
                 {error && <div className="error-message">{error}</div>}
 
