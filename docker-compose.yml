@@ -1,0 +1,35 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./backend:/usr/src/app
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - '3000:80'
+    depends_on:
+      - backend
+
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      MARIADB_DATABASE: scraper
+      env_file:
+      - .env
+
+volumes:
+  postgres_data:

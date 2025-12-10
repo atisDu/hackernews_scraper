@@ -4,6 +4,11 @@ bs4==0.0.2
 certifi==2025.11.12
 charset-normalizer==3.4.4
 Django==6.0
+django-cors-headers==4.9.0
+django-environ==0.12.0
+djangorestframework==3.16.1
+djangorestframework-datatables==0.7.2
+environ==1.0
 idna==3.11
 mod_wsgi==5.0.2
 mysqlclient==2.2.7
