@@ -7,7 +7,9 @@ The Django backend runs on the scraper.py service script, which handles the scra
 - `scrape()` — Scrapes titles, links, points, and timestamps from Hacker News.  
 - `update_score()` — Refreshes the points of already-saved posts.
 
-The frontend displays a slider for selecting the Hacker News pages to scrape and shows the results in a dynamic DataTables table with pagination, sorting, and full-text search
+All scraped and updated posts are stored in a MySQL (MariaDB) database.  
+
+The React frontend displays a slider for selecting the Hacker News pages to scrape and shows the results in a dynamic DataTables table with pagination, sorting, and full-text search
 
 ## Deployment via Docker
 
