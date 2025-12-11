@@ -15,7 +15,7 @@ RUN yarn build
 
 # Use a lightweight web server to serve the static files
 FROM nginx:alpine
-COPY --from=0 /usr/src/app/build /usr/share/nginx/html
+COPY --from=0 /usr/src/app/dist /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80
