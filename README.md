@@ -12,13 +12,25 @@ The frontend displays a slider for selecting the Hacker News pages to scrape and
 ## Deployment via Docker
 
 ### Requirements
+Install the Docker and Docker compose packages    
 ```docker docker-compose```  
 
-Pacman:  
+- Pacman  
 ```sudo pacman -S docker docker-compose```  
 
-Emerge:  
-```doas emerge --ask --verbose app-containers/docker app-containers/docker-cli``` 
+- Emerge  
+```doas emerge --ask --verbose app-containers/docker app-containers/docker-cli```  
+#### Start and enable the Docker daemon
+
+- Systemd:  
+```sudo systemctl start docker && sudo systemctl enable docker```  
+
+- OpenRC:  
+```doas rc-update add docker default```  
+```doas rc-service docker start```
+
+
+
 
 ### Installation
 1. Clone the repo
