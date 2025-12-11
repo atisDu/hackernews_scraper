@@ -1,5 +1,5 @@
 # Hacker News Scraper
-A simple, fully-dockerized scraper for Hacker News with a **Django backend** and **React + Vite frontend frontend** using **DataTables** to display scraped posts.
+A simple, fully-dockerized scraper for Hacker News with a **Django backend** and a **React + Vite frontend** using **DataTables** to display scraped posts.
 ---
 
 The Django backend runs on the scraper.py service script, which handles the scraping logic with two main functions:
