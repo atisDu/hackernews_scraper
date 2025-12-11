@@ -18,20 +18,26 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False)
 )
-environ.Env.read_env(env_file=BASE_DIR / "../.env")
+ENV_PATH = BASE_DIR / "../.env"
+if ENV_PATH.exists():
+    environ.Env.read_env(env_file=ENV_PATH)
 
-DEBUG = env('DEBUG')
-SECRET_KEY = env('SECRET_KEY')
+DEBUG = env("DEBUG", default=False)
+SECRET_KEY = env("SECRET_KEY", default="unsafe-secret-key")
 
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "posts",
-        "USER": "atis",
-        "PASSWORD": "pass",
+        "NAME": env("DB_NAME", default="posts"),
+        "USER": env("DB_USER", default="atis"),
+        "PASSWORD": env("DB_PASSWORD", default="pass"),
+        "HOST": env("DB_HOST", default="127.0.0.1"),
+        "PORT": env("DB_PORT", default="3306"),
         "OPTIONS": {
-            "read_default_file": "/path/to/my.cnf",
+            "charset": "utf8mb4",
         },
     }
 }
@@ -43,11 +49,6 @@ DATABASES = {
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-
-
-ALLOWED_HOSTS = []
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -66,6 +67,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -153,4 +155,8 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+# Statiskajiem failiem izmantoju whitenoise, kas dod tos
+STATICFILES_DIRS = []
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
