@@ -13,6 +13,8 @@ The frontend displays a slider for selecting the Hacker News pages to scrape and
 
 ### Requirements
 ```docker docker-compose```
+Pacman:
+```sudo pacman -S docker docker-compose```
 
 ### Installation
 1. Clone the repo
