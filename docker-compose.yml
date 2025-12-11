@@ -3,10 +3,15 @@ services:
     build:
       context: ./back
       dockerfile: Dockerfile
-    env_file:
-      - .env
     environment:
-      DB_HOST: db
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-placeholder}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      DB_NAME: ${DB_NAME:-posts}
+      DB_USER: ${DB_USER:-atis}
+      DB_PASSWORD: ${DB_PASSWORD:-pass}
+      DB_HOST: ${DB_HOST:-db}
+      DB_PORT: ${DB_PORT:-3306}
     ports:
       - '8000:8000'
     #nevajag exposot localhostam, jo no django puses ir tikai rest_api lapa
@@ -25,14 +30,15 @@ services:
     image: mariadb:11
     command: ["mariadbd", "--innodb-use-native-aio=0"] #Citādi ir errorir ar io_uring
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-pass}
+      MARIADB_USER: ${MARIADB_USER:-atis}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-pass}
       MARIADB_DATABASE: ${MARIADB_DATABASE:-posts}
     volumes:
       - db_data:/var/lib/mysql
     healthcheck:
-      test: ['CMD-SHELL', 'mysqladmin ping -h localhost -uroot -p"$MARIADB_ROOT_PASSWORD"'] #Healthcheck, lai vispār pārliecinātos, ka db strādā
+      test: ['CMD-SHELL', 'mysqladmin ping -h localhost -uroot -p"${MARIADB_ROOT_PASSWORD:-pass}"'] #Healthcheck, lai vispār pārliecinātos, ka db strādā
       interval: 10s
       timeout: 5s
       retries: 5
