@@ -1,7 +1,5 @@
 # docker-compose.yml
 
-version: '3.8'
-
 services:
   backend:
     build:
@@ -26,10 +24,11 @@ services:
   db:
     image: mariadb
     restart: always
-    environment:
-      MARIADB_DATABASE: scraper
-      env_file:
+    env_file:
       - .env
+    environment:
+      MARIADB_DATABASE: posts
+      
 
 volumes:
   postgres_data:
