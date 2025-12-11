@@ -11,6 +11,10 @@ The frontend displays a slider for selecting the Hacker News pages to scrape and
 
 ## Deployment via Docker
 
+> [!NOTE]  
+> If a .env is not present, default values will be used, which are fine if used locally.
+
+
 ### Requirements
 Install the Docker and Docker compose packages    
 ```docker docker-compose```  
@@ -40,10 +44,16 @@ Install the Docker and Docker compose packages
 ```cd /path/to/hackernews_scraper```
 
 4. Run docker-compose
-```docker-compose up -d```
+```docker-compose up -d```  
+> [!WARNING]  
+> If the current user is not in the docker group, docker might need root access
+
+
+
+
 
 ### Access the site
-Frontend is available at
+The UI is available at
 http://localhost:5173/
 
 ## Project structure
